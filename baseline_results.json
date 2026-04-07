@@ -1,0 +1,24 @@
+{
+  "easy": {
+    "avg_score": 0.863,
+    "min_score": 0.75,
+    "max_score": 0.9475,
+    "episodes": 5
+  },
+  "medium": {
+    "avg_score": 0.5268,
+    "min_score": 0.2725,
+    "max_score": 0.7667,
+    "episodes": 5
+  },
+  "hard": {
+    "avg_score": 0.751,
+    "min_score": 0.5404,
+    "max_score": 0.8698,
+    "episodes": 5
+  },
+  "aggregate": {
+    "avg_score": 0.7136,
+    "total_episodes": 15
+  }
+}

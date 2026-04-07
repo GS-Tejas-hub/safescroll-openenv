@@ -1,0 +1,13 @@
+spec_version: 1
+name: safescroll_env
+description: "Content Moderation & Child Safety training environment. Trains AI agents to make context-aware moderation decisions across social media platforms."
+version: "0.1.0"
+author: "G S Tejas"
+type: space
+runtime: fastapi
+app: server.app:app
+port: 8000
+tags:
+  - content-moderation
+  - child-safety
+  - reinforcement-learning
