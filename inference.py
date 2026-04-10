@@ -89,37 +89,26 @@ Respond with ONLY the JSON object. No markdown, no explanation outside the JSON.
 
 def log_start(task: str, env: str, model: str):
     """Emit a [START] log line with task, env, and model info."""
-    print(json.dumps({
-        "type": "[START]",
-        "task": task,
-        "env": env,
-        "model": model,
-    }), flush=True)
+    print(f"[START] task={task} env={env} model={model}", flush=True)
 
 
 def log_step(step: int, action: str, reward: float, done: bool, error: Optional[str] = None):
     """Emit a [STEP] log line after each environment step."""
-    entry: Dict[str, Any] = {
-        "type": "[STEP]",
-        "step": step,
-        "action": action,
-        "reward": reward,
-        "done": done,
-    }
+    parts = [f"[STEP] step={step}", f"action={action}", f"reward={reward:.4f}", f"done={str(done).lower()}"]
     if error:
-        entry["error"] = error
-    print(json.dumps(entry), flush=True)
+        # Replace spaces in error to keep key=value parsing simple
+        safe_error = str(error).replace(" ", "_")
+        parts.append(f"error={safe_error}")
+    print(" ".join(parts), flush=True)
 
 
-def log_end(success: bool, steps: int, score: float, rewards: List[float]):
+def log_end(task: str, success: bool, steps: int, score: float, rewards: List[float]):
     """Emit an [END] log line with final results."""
-    print(json.dumps({
-        "type": "[END]",
-        "success": success,
-        "steps": steps,
-        "score": score,
-        "rewards": rewards,
-    }), flush=True)
+    rewards_str = ",".join(f"{r:.4f}" for r in rewards)
+    print(
+        f"[END] task={task} success={str(success).lower()} steps={steps} score={score:.4f} rewards={rewards_str}",
+        flush=True,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -491,6 +480,7 @@ async def main() -> None:
         task_success = avg_score >= SUCCESS_SCORE_THRESHOLD
 
         log_end(
+            task=task_id,
             success=task_success,
             steps=sum(r.get("steps", 0) for r in task_results),
             score=round(avg_score, 4),
