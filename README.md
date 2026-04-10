@@ -129,7 +129,15 @@ Unlike binary pass/fail grading, SafeScroll decomposes the reward into multiple 
 
 ### Critical Miss Penalty
 
-If the ground truth is `grooming` or `child_exploitation` and the agent approves it: **-1.0 penalty**. This asymmetric weighting teaches models that missing child safety issues is catastrophically worse than a false positive.
+If the ground truth is `grooming` or `child_exploitation` and the agent approves it, an asymmetric penalty is applied:
+
+| Grader | Effective penalty on final [0,1] score |
+|---|---|
+| MediumGrader | -0.10 (penalty multiplier 0.10 on -1.0 base) |
+| HardGrader (per step) | -0.05 |
+| HardGrader (episode aggregate) | -0.20 |
+
+Combined with the `decision_correctness` signal (which scores 0.0 for approving harmful content), a critical miss results in a final score near 0.0. This asymmetric weighting teaches models that missing child safety issues is catastrophically worse than a false positive (which only loses ~0.15 points).
 
 ### Input Validation
 
@@ -208,10 +216,16 @@ python baseline.py --model gpt-4o-mini --episodes 5
 ### Local Development
 
 ```bash
-# Clone and install
+# Clone from GitHub
+git clone https://github.com/GS-Tejas-hub/safescroll-openenv.git
+cd safescroll-openenv
+
+# Or clone from Hugging Face
 git clone https://huggingface.co/spaces/DemonKing0001/safescroll-env
 cd safescroll-env
-pip install openenv-core
+
+# Install dependencies
+pip install -r server/requirements.txt
 
 # Run the server
 uvicorn server.app:app --host 0.0.0.0 --port 8000

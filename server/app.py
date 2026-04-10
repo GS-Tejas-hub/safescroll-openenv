@@ -173,46 +173,75 @@ async def get_grader_score() -> Dict[str, Any]:
 
 
 @app.post("/grader")
-async def run_grader_episode(body: Dict[str, Any] = {}) -> Dict[str, Any]:
+async def run_grader_episode(body: Dict[str, Any] = None) -> Dict[str, Any]:
     """
-    Run a full episode on the grader instance and return the score.
+    Run a full episode and return the grader score.
 
     POST body (optional):
-        {"task_id": "easy"|"medium"|"hard", "seed": int,
-         "action": {"decision": "...", "severity": "...", ...}}
+        {
+            "task_id": "easy" | "medium" | "hard",
+            "seed": int,
+            "action": {
+                "decision": "...", "severity": "...", "category": "...",
+                "reasoning": "...", "account_action": "...", "escalate_to": "..."
+            }
+        }
 
-    If no action is provided, a default action is used.
+    If no action is provided, a sensible default is used so the endpoint
+    always returns a real score.
     """
+    if body is None:
+        body = {}
+
     task_id = body.get("task_id", "easy")
-    seed = body.get("seed")
+    seed = body.get("seed", 0)
 
-    kwargs = {"task_id": task_id}
-    if seed is not None:
-        kwargs["seed"] = seed
+    try:
+        env = SafeScrollEnvironment()
+        obs = env.reset(seed=seed, task_id=task_id)
 
-    obs = _grader_env.reset(**kwargs)
+        action_data = body.get("action")
+        if action_data and isinstance(action_data, dict):
+            action = ModerationAction(
+                decision=action_data.get("decision", "flag_review"),
+                severity=action_data.get("severity", "medium"),
+                category=action_data.get("category", "safe"),
+                reasoning=action_data.get("reasoning", "Reviewing content"),
+                account_action=action_data.get("account_action", "none"),
+                escalate_to=action_data.get("escalate_to", "none"),
+            )
+        else:
+            action = ModerationAction(
+                decision="flag_review",
+                severity="medium",
+                category="safe",
+                reasoning="Reviewing content for potential moderation issues",
+                account_action="none",
+                escalate_to="none",
+            )
 
-    action_data = body.get("action")
-    if action_data:
-        action = ModerationAction(**action_data)
-    else:
-        action = ModerationAction(
-            decision="flag_review", severity="medium", category="safe",
-            reasoning="Reviewing content for potential issues",
-            account_action="none", escalate_to="none",
-        )
+        # Run the full episode (1 step for easy/medium, multiple for hard)
+        max_steps = obs.max_steps
+        final_obs = obs
+        for _ in range(max_steps):
+            final_obs = env.step(action)
+            if final_obs.done:
+                break
 
-    for _ in range(obs.max_steps):
-        obs = _grader_env.step(action)
-
-    grade = _grader_env.last_grade_result
-    return {
-        "score": grade.score if grade else obs.reward,
-        "breakdown": grade.breakdown if grade else None,
-        "feedback": grade.feedback if grade else obs.feedback,
-        "scenario_id": obs.scenario_id,
-        "task_id": task_id,
-    }
+        grade = env.last_grade_result
+        return {
+            "score": grade.score if grade else final_obs.reward,
+            "breakdown": grade.breakdown if grade else final_obs.reward_breakdown,
+            "feedback": grade.feedback if grade else final_obs.feedback,
+            "scenario_id": final_obs.scenario_id,
+            "task_id": task_id,
+        }
+    except Exception as e:
+        return {
+            "score": None,
+            "breakdown": None,
+            "message": f"Grader error: {e}",
+        }
 
 
 @app.post("/baseline")

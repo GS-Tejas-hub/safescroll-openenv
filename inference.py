@@ -39,6 +39,9 @@ MAX_STEPS = 5  # Max steps per episode (hard tasks have 3)
 EPISODES_PER_TASK = 3
 SUCCESS_SCORE_THRESHOLD = 0.5
 
+# Deterministic seed offsets per task (avoids hash() randomization)
+TASK_SEED_OFFSETS: Dict[str, int] = {"easy": 17, "medium": 53, "hard": 89}
+
 # ---------------------------------------------------------------------------
 # Ensure local imports work
 # ---------------------------------------------------------------------------
@@ -448,7 +451,8 @@ async def main() -> None:
         task_rewards: List[float] = []
 
         for episode_idx in range(EPISODES_PER_TASK):
-            seed = episode_idx * 7 + hash(task_id) % 100  # Reproducible seeds
+            # Deterministic seed: stable across Python runs (no hash randomization)
+            seed = episode_idx * 7 + TASK_SEED_OFFSETS.get(task_id, 0)
 
             try:
                 if use_docker:

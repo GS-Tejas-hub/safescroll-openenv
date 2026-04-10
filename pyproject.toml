@@ -12,10 +12,36 @@ build-backend = "setuptools.build_meta"
 name = "openenv-safescroll-env"
 version = "0.1.0"
 description = "SafeScroll — Content Moderation & Child Safety Environment for OpenEnv"
+readme = "README.md"
+license = { text = "BSD-3-Clause" }
+authors = [
+    { name = "G S Tejas", email = "gudur.tejasgs@gmail.com" }
+]
+keywords = ["openenv", "content-moderation", "child-safety", "reinforcement-learning", "rl"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 requires-python = ">=3.10"
 dependencies = [
-    "openenv-core[core]>=0.2.1",
+    "openenv-core>=0.2.0",
+    "openai>=1.0.0",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.24.0",
+    "pydantic>=2.0.0",
 ]
+
+[project.urls]
+Homepage = "https://huggingface.co/spaces/DemonKing0001/safescroll-env"
+Repository = "https://github.com/GS-Tejas-hub/safescroll-openenv"
+Issues = "https://github.com/GS-Tejas-hub/safescroll-openenv/issues"
 
 [project.optional-dependencies]
 dev = [

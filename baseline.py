@@ -6,23 +6,21 @@
 # LICENSE file in the root directory of this source tree.
 
 """
-SafeScroll Baseline Inference Script.
+SafeScroll Baseline Helper (used by /baseline HTTP endpoint).
 
-Runs an OpenAI-compatible LLM against all three SafeScroll tasks
-(easy, medium, hard) and reports reproducible scores.
+This module provides the `run_baseline()` function that the FastAPI
+`/baseline` endpoint calls when judges trigger a baseline run via HTTP.
 
-Usage:
-    # With environment variable
+NOTE: For the official hackathon evaluation, the canonical entry point
+is `inference.py` at the repo root (which emits the mandatory
+[START]/[STEP]/[END] structured logs). This file exists as a
+programmatic helper for the HTTP `/baseline` endpoint that returns
+JSON-shaped baseline scores.
+
+Usage (CLI):
     export OPENAI_API_KEY=sk-...
     python baseline.py
-
-    # Or with .env file (auto-loaded)
-    python baseline.py
-
-    # Custom model
-    python baseline.py --model gpt-4o-mini
-
-    # Specific task only
+    python baseline.py --model gpt-4o-mini --episodes 5
     python baseline.py --task easy
 
 Requirements:
