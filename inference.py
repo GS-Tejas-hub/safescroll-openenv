@@ -413,14 +413,18 @@ async def main() -> None:
     use_docker = False
     env = None
 
+    # Determine which docker image to use (validator passes via LOCAL_IMAGE_NAME)
+    image_name = LOCAL_IMAGE_NAME or IMAGE_NAME
+
     try:
         from client import SafeScrollEnv
 
-        env = await SafeScrollEnv.from_docker_image(IMAGE_NAME)
+        env = await SafeScrollEnv.from_docker_image(image_name)
         use_docker = True
-        print(f"[INFO] Using async client via docker image: {IMAGE_NAME}", flush=True)
-    except Exception:
+        print(f"[INFO] Using async client via docker image: {image_name}", flush=True)
+    except Exception as docker_err:
         # Fall back to direct local environment
+        print(f"[INFO] from_docker_image failed ({docker_err}), falling back to direct env", flush=True)
         from server.safescroll_env_environment import SafeScrollEnvironment
 
         env = SafeScrollEnvironment()

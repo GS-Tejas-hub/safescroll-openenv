@@ -16,7 +16,10 @@ from typing import Dict
 from openenv.core import EnvClient
 from openenv.core.client_types import StepResult
 
-from .models import ModerationAction, ModerationObservation, SafeScrollState
+try:
+    from .models import ModerationAction, ModerationObservation, SafeScrollState
+except ImportError:
+    from models import ModerationAction, ModerationObservation, SafeScrollState  # type: ignore[no-redef]
 
 
 class SafeScrollEnv(
